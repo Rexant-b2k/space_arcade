@@ -1,14 +1,14 @@
 # Galactic Guardians:
 # The Sentinel Saga
 ## _== Space arcade ==>>_
-![Galactic Guardians: The Sentinel Saga](https://raw.githubusercontent.com/Rexant-b2k/space_arcade/main/screenshots/splash.webp)
+![Galactic Guardians: The Sentinel Saga](https://github.com/Rexant-b2k/space_arcade/blob/main/screenshots/splash.webp)
 ## based on:
 [![N|Pygame](https://www.pygame.org/docs/_static/pygame_tiny.png)](https://www.pygame.org/)
 
 This game, inspired by classic 80's arcades, will deep you into old-fashion fun and joy.
-![Game process](https://raw.githubusercontent.com/Rexant-b2k/space_arcade/main/screenshots/screen2.webp)
-![Game process](https://raw.githubusercontent.com/Rexant-b2k/space_arcade/main/screenshots/screen1.webp)
-![Game pause](https://github.com/Rexant-b2k/space_arcade/blob/main/screenshots/screen3.webp)
+![Game process](https://github.com/Rexant-b2k/space_arcade/blob/main/screenshots/screen2.webp)
+![Game pause](https://github.com/Rexant-b2k/space_arcade/blob/main/screenshots/screen1.webp)
+![Start screen](https://github.com/Rexant-b2k/space_arcade/blob/main/screenshots/screen3.webp)
 
 ## Features
 Project developing currently in progress. However the current version is fully playable.
