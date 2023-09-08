@@ -1,2 +1,2 @@
 # space_arcade
-Pygame 'Space Invasion' arcade
+Pygame 'Galactic Guardians: The Sentinel Saga' arcade

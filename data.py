@@ -25,8 +25,17 @@ BLUE_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_blue.png'))
 YELLOW_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_yellow.png'))
 
 
-def game_init():
-    pass
+# def game_init():
+#     pass
+
+def game_session_init():
+    session_data = {
+        'score': 0,
+        'enemies': [],
+        'lasers': [] # need to replace by shots or smth like that
+    }
+
+    return session_data
 
 
 def collide(obj1, obj2): # ?
@@ -51,8 +60,6 @@ class SpaceObject: # need to create base class
 
 class SpaceShell(SpaceObject):
     '''Base shooting object, which can make a damage'''
-    # def __init__(self, pos_x, pos_y, img):
-    #     super().__init__(pos_x, pos_y, img)
 
     def off_screen(self, height):
         return not (self.y <= height and self.y >= 0) # ?
@@ -61,14 +68,12 @@ class SpaceShell(SpaceObject):
         return collide(self, obj)
 
 
-
 class Laser(SpaceShell):
     '''Base attack shot, moved directly down'''
     pass
 
 
-
-class Ship:
+class Ship(SpaceObject):
     COOLDOWN = 30 # half a second if FPS = 60
 
     def __init__(self, pos_x, pos_y, health=100):
@@ -116,6 +121,8 @@ class Ship:
         return self.ship_img.get_height()
 
 class Player(Ship):
+    COOLDOWN = 20
+
     def __init__(self, pos_x, pos_y, session_data, health=100):
         super().__init__(pos_x, pos_y, health)
         self.ship_img = YELLOW_SPACE_SHIP

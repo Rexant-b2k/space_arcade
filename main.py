@@ -4,7 +4,7 @@ import os
 import random
 
 from const import COLORS
-from data import Player, Enemy, collide
+from data import Player, Enemy, collide, game_session_init
 
 pygame.font.init()
 
@@ -52,11 +52,8 @@ def main():
     main_font = pygame.font.SysFont('comicsans', 50)
     lost_font = pygame.font.SysFont('comicsans', 60)
     
-    session_data = {
-        'score': 0,
-        'enemies': [],
-        'lasers': [] # need to replace by shots or smth like that
-    }
+    session_data = game_session_init()
+
     enemies = [] # need to move to session_data
     wave_length = 5
     enemy_vel = 1
