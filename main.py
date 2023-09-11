@@ -1,24 +1,43 @@
 import pygame
-import os
+# import os
 # import time
 import random
 
-from const import COLORS
-from data import Player, Enemy, collide, game_session_init
+from const import BG, MENU_BG, COLORS, WS_RESOLUTIONS, WIDTH, HEIGHT
+from data import Player, Enemy, collide
 
 pygame.font.init()
 
-# WIDTH, HEIGHT = 750, 750
-WIDTH, HEIGHT = 1600, 900
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Space Arcade')
 
 
-# Background
-# BG = pygame.transform.scale(pygame.image.load(os.path.join('assets', 'background-black.png')), (WIDTH, HEIGHT))
-BG = pygame.transform.scale(pygame.image.load(os.path.join('assets', 'space_bg.webp')), (WIDTH, HEIGHT))
-MENU_BG = pygame.transform.scale(pygame.image.load(os.path.join('assets', 'main_menu.webp')), (WIDTH, HEIGHT))
-# MENU_BG = pygame.image.load(os.path.join('assets', 'main_menu_bg.png'))
+
+def game_init():
+    game_data = {
+        'resolution': WS_RESOLUTIONS['1600x900'],
+        'music': False,
+        'sounds': False,
+        'FPS': 60,
+    }
+    return game_data
+
+def game_session_init():
+    session_data = {
+        'score': 0,
+        'enemies': [],
+        'weapon_shells': [], # need to replace by shots or smth like that
+        'player_weapon_shells': [],
+        'level': 0,
+        'lives': 5,
+        'wave_length': 5,
+        'enemy_vel': 1,
+        'player_vel': 5,
+        'laser_vel': 5,
+        'laser_damage': 10,
+    }
+
+    return session_data
 
 def get_horizontal_center_position(obj):
     return WIDTH / 2 - obj.get_width() / 2
@@ -35,7 +54,7 @@ def paused(pause):
 
     while pause:
         pause_label = pause_font.render('Pause. Press any key to continue', 1, COLORS['violet'])
-        WINDOW.blit(pause_label, get_middle_position(pause_label)) # magic
+        WINDOW.blit(pause_label, get_middle_position(pause_label))
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -44,34 +63,26 @@ def paused(pause):
             elif event.type == pygame.KEYDOWN:
                 pause = False
 
-def main():
+def main(session_data):
     run = True
-    FPS = 120 # change speed of game, base = 60
-    level = 0
-    lives = 5 # survivability of our base
+
     main_font = pygame.font.SysFont('comicsans', 50)
     lost_font = pygame.font.SysFont('comicsans', 60)
     
-    session_data = game_session_init()
-
-    enemies = [] # need to move to session_data
-    wave_length = 5
-    enemy_vel = 1
-
-    player_vel = 5 # speed of player
-    laser_vel = 5
-    player = Player(300, 630, session_data) # magic
+    player = Player(WIDTH / 2,
+                    HEIGHT * 0.87,
+                    session_data) # magic
 
     clock = pygame.time.Clock()
 
     lost = False
-    lost_count = 0
+    lost_count = 0 # works for 'defeat' message stays on screen
     
     def redraw_window():
         WINDOW.blit(BG, (0, 0))
         # draw text
-        lives_label = main_font.render(f'Lives: {lives}', 1, COLORS['white'])
-        level_label = main_font.render(f'Level: {level}', 1, COLORS['white'])
+        lives_label = main_font.render(f'Lives: {session_data["lives"]}', 1, COLORS['white'])
+        level_label = main_font.render(f'Level: {session_data["level"]}', 1, COLORS['white'])
         score_label = main_font.render(f'Score: {session_data["score"]}',
                                               1, COLORS['white'])
 
@@ -81,10 +92,16 @@ def main():
                     (get_horizontal_center_position(score_label), 10))
 
         
-        for enemy in enemies:
+        for enemy in session_data['enemies']:
             enemy.draw(WINDOW)
 
+        for shell in session_data['weapon_shells']:
+            shell.draw(WINDOW)
+
         player.draw(WINDOW)
+
+        for player_shell in session_data['player_weapon_shells']:
+            player_shell.draw(WINDOW)
 
         if lost:
             lost_label = lost_font.render('You have lost!', 1, COLORS['white'])
@@ -93,69 +110,78 @@ def main():
         pygame.display.update()
 
     while run:
-        clock.tick(FPS)
+        clock.tick(game_data['FPS'])
         redraw_window()
 
-        if lives <= 0 or player.health <= 0:
+        if session_data['lives'] <= 0 or player.health <= 0:
             lost = True
             lost_count += 1
         
         if lost:
-            if lost_count > FPS * 3: # 60 fps means 3 sec
+            if lost_count > game_data['FPS'] * 3: # 60 fps means 3 sec
                 run = False
             else:
                 continue
 
-        if len(enemies) == 0:
-            level += 1
-            wave_length += 5 # add 5 more enemies each level
-            for i in range(wave_length):
+        # possible to put in another func
+        if len(session_data['enemies']) == 0:
+            session_data['level'] += 1
+            session_data['wave_length'] += 5 # add 5 more enemies each level
+            for _ in range(session_data['wave_length']):
                 enemy = Enemy(random.randrange(50, WIDTH - 100),
                               random.randrange(-1500, -100), # -1500*level/5
+                              session_data,
                               random.choice(['red', 'blue', 'green']))
-                enemies.append(enemy)
+                session_data['enemies'].append(enemy)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
-            # elif event.type == pygame.KEYDOWN
 
-        keys = pygame.key.get_pressed()
-        if (keys[pygame.K_a] or keys[pygame.K_LEFT]) and player.x - player_vel > 0: #left
-            player.x -= player_vel
-        if (keys[pygame.K_d] or keys[pygame.K_RIGHT]) and player.x + player_vel + player.get_width() < WIDTH: # right, size player
-            player.x += player_vel
-        if (keys[pygame.K_w] or keys[pygame.K_UP]) and player.y - player_vel > 0: #up
-            player.y -= player_vel
-        if (keys[pygame.K_s] or keys[pygame.K_DOWN]) and player.y + player_vel + player.get_height() + 18 < HEIGHT: # down, size player, 18 to show healthbar
-            player.y += player_vel
+        keys = pygame.key.get_pressed() # possible to add info on I and help on H
+        if (keys[pygame.K_a] or keys[pygame.K_LEFT]) and player.x - session_data['player_vel'] > 0: #left
+            player.x -= session_data['player_vel']
+        if (keys[pygame.K_d] or keys[pygame.K_RIGHT]) and player.x + session_data['player_vel'] + player.get_width() < WIDTH: # right, size player
+            player.x += session_data['player_vel']
+        if (keys[pygame.K_w] or keys[pygame.K_UP]) and player.y - session_data['player_vel'] > 0: #up
+            player.y -= session_data['player_vel']
+        if (keys[pygame.K_s] or keys[pygame.K_DOWN]) and player.y + session_data['player_vel'] + player.get_height() + 18 < HEIGHT: # down, size player, 18 to show healthbar
+            player.y += session_data['player_vel']
         if keys[pygame.K_SPACE]:
             player.shoot()
         if keys[pygame.K_p]:
             pause = True
             paused(pause)
 
+        # enemy_movement
+        for enemy in session_data['enemies'][:]:
+            enemy.move(session_data['enemy_vel'])
+            # enemy.move_lasers(session_data['laser_vel'], player) # replace lasers to session_data
 
-        for enemy in enemies[:]:
-            enemy.move(enemy_vel)
-            enemy.move_lasers(laser_vel, player)
-
-            if random.randrange(0, 2*FPS) == 1: # each ~ 2 sec
+            if random.randrange(0, 2*game_data['FPS']) == 1: # each ~ 2 sec
                 enemy.shoot()
+                # debug
+                print('enemy shoot')
 
             if collide(enemy, player):
                 player.health -= 10
                 session_data['score'] += 1
-                enemies.remove(enemy)
+                session_data['enemies'].remove(enemy)
             elif enemy.y + enemy.get_height() > HEIGHT:
-                lives -= 1
-                enemies.remove(enemy)
+                session_data['lives'] -= 1
+                session_data['enemies'].remove(enemy)
+        
+        # Laser movement
+        for shell in session_data['weapon_shells'][:]:
+            shell_exists = shell.move(session_data['laser_vel'], player, session_data['laser_damage'])
+            if not shell_exists:
+                session_data['weapon_shells'].remove(shell)
 
+        player.move_lasers(-session_data['laser_vel'], session_data['enemies'])
 
-
-        player.move_lasers(-laser_vel, enemies)
 
 def main_menu():
+    global game_data
     title_font = pygame.font.SysFont('comicsans', 70)
     run = True
     while run:
@@ -168,9 +194,11 @@ def main_menu():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                main()
+                session_data = game_session_init() # possibly to modify in future with difficulty level
+                main(session_data)
     pygame.quit()
 
 
 if __name__ == '__main__':
+    game_data = game_init()
     main_menu()
