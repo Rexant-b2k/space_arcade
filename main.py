@@ -26,7 +26,7 @@ def game_session_init():
     session_data = {
         'score': 0,
         'enemies': [],
-        'weapon_shells': [], # need to replace by shots or smth like that
+        'weapon_shells': [],
         'player_weapon_shells': [],
         'level': 0,
         'lives': 5,
@@ -156,12 +156,10 @@ def main(session_data):
         # enemy_movement
         for enemy in session_data['enemies'][:]:
             enemy.move(session_data['enemy_vel'])
-            # enemy.move_lasers(session_data['laser_vel'], player) # replace lasers to session_data
+            enemy.cooldown() # refresh cooldown to shoot
 
             if random.randrange(0, 2*game_data['FPS']) == 1: # each ~ 2 sec
                 enemy.shoot()
-                # debug
-                print('enemy shoot')
 
             if collide(enemy, player):
                 player.health -= 10
