@@ -4,8 +4,6 @@ import pygame
 
 from const import WIDTH, HEIGHT, COLORS
 
-# from main import YELLOW_SPACE_SHIP, YELLOW_LASER
-
 # WIDTH, HEIGHT = 750, 750
 WIDTH, HEIGHT = 1600, 900
 # Load images
@@ -43,9 +41,8 @@ class SpaceObject: # need to create base class
     def draw(self, window):
         window.blit(self.img, (self.x, self.y))
 
-    def move(self, vert_vel, horiz_vel=0):
+    def move(self, vert_vel):
         self.y += vert_vel
-        self.x += horiz_vel
 
 
 class WeaponShell(SpaceObject):
@@ -61,18 +58,18 @@ class WeaponShell(SpaceObject):
     def collision(self, obj):
         return collide(self, obj)
 
-    def move(self, vert_vel, obj=None, damage=10, horiz_vel=0):
+    def move(self, vert_vel, target=None, damage=10):
         super().move(vert_vel)
         exists = True
         if self.off_screen(HEIGHT):
             exists = False
-        elif isinstance(obj, Player):
-            if self.collision(obj):
-                obj.health -= damage
+        elif isinstance(target, Player):
+            if self.collision(target):
+                target.health -= damage
                 exists = False
-        elif isinstance(obj, list):
-            for element in obj:
-                if self.collision(element):
+        elif isinstance(target, list):
+            for obj in target:
+                if self.collision(obj):
                     obj.health -= damage
                     exists = False
         return exists
@@ -107,6 +104,9 @@ class Ship(SpaceObject):
             self.session_data['weapon_shells'].append(laser)
             self.cool_down_counter = 1
 
+    def is_dead(self):
+        return self.health <= 0
+
     def get_width(self):
         return self.img.get_width()
 
@@ -123,30 +123,9 @@ class Player(Ship):
         self.mask = pygame.mask.from_surface(self.img)
         self.max_health = health
 
-    def shoot(self):
-        if self.cool_down_counter == 0:
-            laser = Laser(self.x, self.y, self.laser_img, self)
-            self.session_data['player_weapon_shells'].append(laser)
-            self.cool_down_counter = 1
-
-    def move_lasers(self, vel, objs): # change globally design
-        self.cooldown()
-        for laser in self.session_data['player_weapon_shells']:
-            laser.move(vel)
-            if laser.off_screen(HEIGHT):
-                self.session_data['player_weapon_shells'].remove(laser)
-            else:
-                for obj in objs:
-                    if laser.collision(obj):
-                        # obj.health -= 10
-                        objs.remove(obj)
-                        self.session_data['score'] += 1
-                        if laser in self.session_data['player_weapon_shells']: # worked even before this if
-                            self.session_data['player_weapon_shells'].remove(laser)
-
     def draw(self, window):
         super().draw(window)
-        self.healthbar(window)
+        self.healthbar(window) # could improve with mixin
 
     def healthbar(self, window):
         pygame.draw.rect(window, COLORS['red'],
@@ -164,7 +143,7 @@ class Enemy(Ship):
         'blue': (BLUE_SPACE_SHIP, BLUE_LASER)
     }
 
-    def __init__(self, pos_x, pos_y, session_data, color, health=100):
+    def __init__(self, pos_x, pos_y, session_data, color, health=10):
         super().__init__(pos_x, pos_y, session_data, health)
         self.img, self.laser_img = self.COLOR_MAP[color]
         self.mask = pygame.mask.from_surface(self.img)

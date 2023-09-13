@@ -27,7 +27,6 @@ def game_session_init():
         'score': 0,
         'enemies': [],
         'weapon_shells': [],
-        'player_weapon_shells': [],
         'level': 0,
         'lives': 5,
         'wave_length': 5,
@@ -100,9 +99,6 @@ def main(session_data):
 
         player.draw(WINDOW)
 
-        for player_shell in session_data['player_weapon_shells']:
-            player_shell.draw(WINDOW)
-
         if lost:
             lost_label = lost_font.render('You have lost!', 1, COLORS['white'])
             WINDOW.blit(lost_label, get_middle_position(lost_label))
@@ -113,7 +109,7 @@ def main(session_data):
         clock.tick(game_data['FPS'])
         redraw_window()
 
-        if session_data['lives'] <= 0 or player.health <= 0:
+        if session_data['lives'] <= 0 or player.is_dead():
             lost = True
             lost_count += 1
         
@@ -153,8 +149,27 @@ def main(session_data):
             pause = True
             paused(pause)
 
+        # Laser movement
+        for shell in session_data['weapon_shells'][:]:
+            if shell.parent == player:
+                target = session_data['enemies']
+                speed = -session_data['laser_vel']
+            else:
+                target = player
+                speed = session_data['laser_vel']
+            shell_exists = shell.move(speed, target, session_data['laser_damage'])
+            if not shell_exists:
+                session_data['weapon_shells'].remove(shell)
+
+        # player cooldown
+        player.cooldown() # extracted from player.move_lasers
+
         # enemy_movement
         for enemy in session_data['enemies'][:]:
+            if enemy.is_dead():
+                session_data['enemies'].remove(enemy)
+                session_data['score'] += 1
+                continue
             enemy.move(session_data['enemy_vel'])
             enemy.cooldown() # refresh cooldown to shoot
 
@@ -168,14 +183,7 @@ def main(session_data):
             elif enemy.y + enemy.get_height() > HEIGHT:
                 session_data['lives'] -= 1
                 session_data['enemies'].remove(enemy)
-        
-        # Laser movement
-        for shell in session_data['weapon_shells'][:]:
-            shell_exists = shell.move(session_data['laser_vel'], player, session_data['laser_damage'])
-            if not shell_exists:
-                session_data['weapon_shells'].remove(shell)
 
-        player.move_lasers(-session_data['laser_vel'], session_data['enemies'])
 
 
 def main_menu():
