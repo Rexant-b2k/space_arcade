@@ -48,7 +48,7 @@ python main.py
 Galactic Guardians uses a number of open source and proprietary projects to work properly:
 - [Python] - Python 3.11
 - [Pygame] - Pygame library
-And of course Galactic Guardians: The Sentinel Saga itself is open source with a [public repository][Space_arcade]
+- And of course Galactic Guardians: The Sentinel Saga itself is open source with a [public repository][Space_arcade]
  on GitHub.
 
 ## Plugins
@@ -61,7 +61,8 @@ Instructions on how to use them in your own application are linked below.
 | Dillinger    | [Dillinger.io]  |
 
 ## Version history
-v0.1a (current) - Base gameplay, initial refactoring of code [08.09.2023]
+v0.2a (current) - Lasers are not belongs ships anymore. Now if you defeat an enemy - his laser will still go on (previously - dissapered with the ship). Tech: Classes inheratances and global change to OOP approach.
+v0.1a - Base gameplay, initial refactoring of code [08.09.2023]
 
 ## Authors
 [Sergei Baryshevskii](https://www.linkedin.com/in/barysecho/)
