@@ -1,6 +1,4 @@
 import pygame
-# import os
-# import time
 import random
 
 from const import BG, MENU_BG, COLORS, WS_RESOLUTIONS, WIDTH, HEIGHT
@@ -11,13 +9,11 @@ pygame.font.init()
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Space Arcade')
 
-
-
 def game_init():
     game_data = {
         'resolution': WS_RESOLUTIONS['1600x900'],
-        'music': False,
-        'sounds': False,
+        # 'music': False,
+        # 'sounds': False,
         'FPS': 60,
     }
     return game_data
@@ -114,7 +110,7 @@ def main(session_data):
             lost_count += 1
         
         if lost:
-            if lost_count > game_data['FPS'] * 3: # 60 fps means 3 sec
+            if lost_count > game_data['FPS'] * 3: # 60 fps * 3 means 3 sec
                 run = False
             else:
                 continue

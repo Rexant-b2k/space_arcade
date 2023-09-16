@@ -2,10 +2,8 @@ import os
 
 import pygame
 
-from const import WIDTH, HEIGHT, COLORS
+from const import HEIGHT, COLORS
 
-# WIDTH, HEIGHT = 750, 750
-WIDTH, HEIGHT = 1600, 900
 # Load images
 RED_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'enemy3_small.png'))
 GREEN_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'enemy2_small.png'))
@@ -19,9 +17,6 @@ RED_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_red.png'))
 GREEN_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_green.png'))
 BLUE_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_blue.png'))
 YELLOW_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_yellow.png'))
-
-
-
 
 
 def collide(obj1, obj2): # ?
@@ -83,12 +78,11 @@ class Laser(WeaponShell):
 class Ship(SpaceObject):
     COOLDOWN = 30 # half a second if FPS = 60
 
-    def __init__(self, pos_x, pos_y, session_data, health=100):
-        self.x = pos_x
-        self.y = pos_y
+    def __init__(self, pos_x, pos_y, session_data, img=None, laser_img=None, health=100):
+        super().__init__(pos_x, pos_y, img)
         self.health = health
-        self.img = None
-        self.laser_img = None
+        self.image = img
+        self.laser_img = laser_img
         self.cool_down_counter = 0
         self.session_data = session_data
 
@@ -100,7 +94,7 @@ class Ship(SpaceObject):
 
     def shoot(self): # cooldown is located in main
         if self.cool_down_counter == 0:
-            laser = Laser(self.x, self.y, self.laser_img, self)
+            laser = Laser(self.x - ((self.laser_img.get_width() - self.img.get_width())/2), self.y, self.laser_img, self)
             self.session_data['weapon_shells'].append(laser)
             self.cool_down_counter = 1
 
@@ -116,18 +110,17 @@ class Ship(SpaceObject):
 class Player(Ship):
     COOLDOWN = 20 # 1/3 a second if fps = 60
 
-    def __init__(self, pos_x, pos_y, session_data, health=100):
-        super().__init__(pos_x, pos_y, session_data, health)
-        self.img = YELLOW_SPACE_SHIP
-        self.laser_img = YELLOW_LASER
-        self.mask = pygame.mask.from_surface(self.img)
+    def __init__(self, pos_x, pos_y, session_data, player_choice=None, health=100):
+        img = YELLOW_SPACE_SHIP
+        laser_img = YELLOW_LASER
+        super().__init__(pos_x, pos_y, session_data, img, laser_img, health)
         self.max_health = health
 
     def draw(self, window):
         super().draw(window)
         self.healthbar(window) # could improve with mixin
 
-    def healthbar(self, window):
+    def healthbar(self, window): # redraw to improve graphics, use resize
         pygame.draw.rect(window, COLORS['red'],
                          (self.x, self.y + self.img.get_height() + 10,
                          self.img.get_width(), 10))
@@ -144,12 +137,7 @@ class Enemy(Ship):
     }
 
     def __init__(self, pos_x, pos_y, session_data, color, health=10):
-        super().__init__(pos_x, pos_y, session_data, health)
-        self.img, self.laser_img = self.COLOR_MAP[color]
-        self.mask = pygame.mask.from_surface(self.img)
+        img, laser_image = self.COLOR_MAP[color]
+        super().__init__(pos_x, pos_y, session_data, img, laser_image, health)
 
-    def shoot(self): # possible fix at parent level
-        if self.cool_down_counter == 0:
-            laser = Laser(self.x - 20, self.y, self.laser_img, self) # -20 is bad. it is to fix attacking position of laser
-            self.session_data['weapon_shells'].append(laser)
-            self.cool_down_counter = 1
+
