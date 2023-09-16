@@ -48,6 +48,7 @@ python main.py
 Galactic Guardians uses a number of open source and proprietary projects to work properly:
 - [Python] - Python 3.11
 - [Pygame] - Pygame library  
+  
 And of course Galactic Guardians: The Sentinel Saga itself is open source with a [public repository][Space_arcade]
  on GitHub.
 
