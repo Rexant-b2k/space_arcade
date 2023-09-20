@@ -44,7 +44,9 @@ def get_middle_position(obj):
     return (get_horizontal_center_position(obj),
             get_vertical_center_position(obj))
 
-def paused(pause):
+def paused():
+    pygame.time.wait(100)
+    pause = True
     pause_font = pygame.font.SysFont('comicsans', 70)
 
     while pause:
@@ -57,6 +59,30 @@ def paused(pause):
                 quit()
             elif event.type == pygame.KEYDOWN:
                 pause = False
+
+def escape_game():
+    pygame.time.wait(100)
+    pause = True
+    escape_font = pygame.font.SysFont('comicsans', 70)
+
+    while pause:
+        pause_label_first = escape_font.render('Are you going to leave game?', 1, COLORS['violet'])
+        pause_label_second = escape_font.render('Press Enter to end the game or ESC to return', 1, COLORS['violet'])
+        WINDOW.blit(pause_label_first, (get_horizontal_center_position(pause_label_first), HEIGHT/2 - pause_label_first.get_height()))
+        WINDOW.blit(pause_label_second, (get_horizontal_center_position(pause_label_second), HEIGHT/2 + pause_label_first.get_height()))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]:
+            pygame.time.wait(100)
+            pause = False
+        if keys[pygame.K_KP_ENTER] or keys[pygame.K_RETURN]:
+            pygame.quit()
+            quit()
+                
 
 def main(session_data):
     run = True
@@ -142,8 +168,9 @@ def main(session_data):
         if keys[pygame.K_SPACE]:
             player.shoot()
         if keys[pygame.K_p]:
-            pause = True
-            paused(pause)
+            paused()
+        if keys[pygame.K_ESCAPE]:
+            escape_game()
 
         # Laser movement
         for shell in session_data['weapon_shells'][:]:
