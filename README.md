@@ -27,6 +27,7 @@ Project developing currently in progress. However the current version is fully p
 | Spacebar         | Shoot        |
 | P                | Pause        |
 
+
 ## Installation and start the game
 *Requires python and pygame library. I recommend use virtual enviroment (venv)
 
