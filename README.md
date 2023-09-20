@@ -66,8 +66,8 @@ v0.2a (current) - Lasers are not belongs ships anymore. Now if you defeat an ene
 v0.1a - Base gameplay, initial refactoring of code [08.09.2023]  
 
 ## Authors
-[Sergei Baryshevskii](https://www.linkedin.com/in/barysecho/)
-With gratitude to:
+[Sergei Baryshevskii](https://www.linkedin.com/in/barysecho/)  
+With gratitude to:  
 [Tim Ruscica](https://www.techwithtim.net/) (approach to game development powered by pygame)
 
 ## License
