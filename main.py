@@ -1,10 +1,18 @@
+import os
+
 import pygame
 import random
 
 from const import BG, MENU_BG, COLORS, WS_RESOLUTIONS, WIDTH, HEIGHT
 from data import Player, Enemy, collide
 
-pygame.font.init()
+os.environ['SDL_VIDEO_WINDOW_POS'] = "100,100"
+os.environ['SDL_VIDEO_CENTERED'] = "True"
+
+# pygame.font.init()
+# pygame.display.init() # doesn't help
+pygame.init()
+# pygame.key.set_repeat() # doesn't help
 
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Space Arcade')
@@ -45,7 +53,6 @@ def get_middle_position(obj):
             get_vertical_center_position(obj))
 
 def paused():
-    pygame.time.wait(100)
     pause = True
     pause_font = pygame.font.SysFont('comicsans', 70)
 
@@ -61,7 +68,6 @@ def paused():
                 pause = False
 
 def escape_game():
-    pygame.time.wait(100)
     pause = True
     escape_font = pygame.font.SysFont('comicsans', 70)
 
@@ -75,13 +81,12 @@ def escape_game():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_ESCAPE]:
-            pygame.time.wait(100)
-            pause = False
-        if keys[pygame.K_KP_ENTER] or keys[pygame.K_RETURN]:
-            pygame.quit()
-            quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pause = False
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                    pygame.quit()
+                    quit()
                 
 
 def main(session_data):
@@ -155,6 +160,12 @@ def main(session_data):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    paused()
+                elif event.key == pygame.K_ESCAPE:
+                    escape_game()
+
 
         keys = pygame.key.get_pressed() # possible to add info on I and help on H
         if (keys[pygame.K_a] or keys[pygame.K_LEFT]) and player.x - session_data['player_vel'] > 0: #left
@@ -167,10 +178,6 @@ def main(session_data):
             player.y += session_data['player_vel']
         if keys[pygame.K_SPACE]:
             player.shoot()
-        if keys[pygame.K_p]:
-            paused()
-        if keys[pygame.K_ESCAPE]:
-            escape_game()
 
         # Laser movement
         for shell in session_data['weapon_shells'][:]:
@@ -225,6 +232,11 @@ def main_menu():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 session_data = game_session_init() # possibly to modify in future with difficulty level
                 main(session_data)
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    WINDOW.blit(BG, (0, 0))
+                    pygame.display.update()
+                    escape_game()
     pygame.quit()
 
 
