@@ -87,7 +87,52 @@ def escape_game():
                 elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                     pygame.quit()
                     quit()
-                
+
+
+def generate_enemies(session_data):
+    session_data['level'] += 1
+    session_data['wave_length'] += 5 # add 5 more enemies each level
+    for _ in range(session_data['wave_length']):
+        enemy = Enemy(random.randrange(50, WIDTH - 100),
+                        random.randrange(-1500, -100), # -1500*level/5
+                        session_data,
+                        random.choice(['red', 'blue', 'green']))
+        session_data['enemies'].append(enemy)
+
+
+def enemies_movement(session_data, player): # possible to remove player if move collide inside Space object class
+    for enemy in session_data['enemies'][:]:
+        if enemy.is_dead():
+            session_data['enemies'].remove(enemy)
+            session_data['score'] += 1
+            continue
+        enemy.move(session_data['enemy_vel'])
+        enemy.cooldown() # refresh cooldown to shoot
+
+        if random.randrange(0, 2*game_data['FPS']) == 1: # each ~ 2 sec
+            enemy.shoot()
+
+        if collide(enemy, player):
+            player.health -= 10
+            session_data['score'] += 1
+            session_data['enemies'].remove(enemy)
+        elif enemy.y + enemy.get_height() > HEIGHT:
+            session_data['lives'] -= 1
+            session_data['enemies'].remove(enemy)
+
+
+def weapon_shell_movement(session_data, player):
+    for shell in session_data['weapon_shells'][:]:
+        if shell.parent == player:
+            target = session_data['enemies']
+            speed = -session_data['laser_vel']
+        else:
+            target = player
+            speed = session_data['laser_vel']
+        shell_exists = shell.move(speed, target, session_data['laser_damage'])
+        if not shell_exists:
+            session_data['weapon_shells'].remove(shell)
+
 
 def main(session_data):
     run = True
@@ -146,16 +191,9 @@ def main(session_data):
             else:
                 continue
 
-        # possible to put in another func
+        # Enemies generation
         if len(session_data['enemies']) == 0:
-            session_data['level'] += 1
-            session_data['wave_length'] += 5 # add 5 more enemies each level
-            for _ in range(session_data['wave_length']):
-                enemy = Enemy(random.randrange(50, WIDTH - 100),
-                              random.randrange(-1500, -100), # -1500*level/5
-                              session_data,
-                              random.choice(['red', 'blue', 'green']))
-                session_data['enemies'].append(enemy)
+            generate_enemies(session_data)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -180,39 +218,42 @@ def main(session_data):
             player.shoot()
 
         # Laser movement
-        for shell in session_data['weapon_shells'][:]:
-            if shell.parent == player:
-                target = session_data['enemies']
-                speed = -session_data['laser_vel']
-            else:
-                target = player
-                speed = session_data['laser_vel']
-            shell_exists = shell.move(speed, target, session_data['laser_damage'])
-            if not shell_exists:
-                session_data['weapon_shells'].remove(shell)
+        # Weapon shell movement
+        weapon_shell_movement(session_data, player)
+        # for shell in session_data['weapon_shells'][:]:
+        #     if shell.parent == player:
+        #         target = session_data['enemies']
+        #         speed = -session_data['laser_vel']
+        #     else:
+        #         target = player
+        #         speed = session_data['laser_vel']
+        #     shell_exists = shell.move(speed, target, session_data['laser_damage'])
+        #     if not shell_exists:
+        #         session_data['weapon_shells'].remove(shell)
 
         # player cooldown
         player.cooldown() # extracted from player.move_lasers
 
-        # enemy_movement
-        for enemy in session_data['enemies'][:]:
-            if enemy.is_dead():
-                session_data['enemies'].remove(enemy)
-                session_data['score'] += 1
-                continue
-            enemy.move(session_data['enemy_vel'])
-            enemy.cooldown() # refresh cooldown to shoot
+        # Enemy movement
+        enemies_movement(session_data, player)
+        # for enemy in session_data['enemies'][:]:
+        #     if enemy.is_dead():
+        #         session_data['enemies'].remove(enemy)
+        #         session_data['score'] += 1
+        #         continue
+        #     enemy.move(session_data['enemy_vel'])
+        #     enemy.cooldown() # refresh cooldown to shoot
 
-            if random.randrange(0, 2*game_data['FPS']) == 1: # each ~ 2 sec
-                enemy.shoot()
+        #     if random.randrange(0, 2*game_data['FPS']) == 1: # each ~ 2 sec
+        #         enemy.shoot()
 
-            if collide(enemy, player):
-                player.health -= 10
-                session_data['score'] += 1
-                session_data['enemies'].remove(enemy)
-            elif enemy.y + enemy.get_height() > HEIGHT:
-                session_data['lives'] -= 1
-                session_data['enemies'].remove(enemy)
+        #     if collide(enemy, player):
+        #         player.health -= 10
+        #         session_data['score'] += 1
+        #         session_data['enemies'].remove(enemy)
+        #     elif enemy.y + enemy.get_height() > HEIGHT:
+        #         session_data['lives'] -= 1
+        #         session_data['enemies'].remove(enemy)
 
 
 
