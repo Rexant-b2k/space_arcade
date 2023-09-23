@@ -20,7 +20,7 @@ def get_screen_res():
             height = monitors[i].height
             display = i
     baseheight = width / 16 * 9
-    if height <= baseheight: # 16:9 monitor
+    if height <= baseheight: # 16:9 monitor or less (4:3)
         for res in WS_RESOLUTIONS:
             if WS_RESOLUTIONS[res][1] <= height:
                 final_resolution = res
