@@ -5,38 +5,36 @@ import pygame
 import random
 from screeninfo import get_monitors, Monitor
 
-from const import COLORS, WS_RESOLUTIONS #, WIDTH, HEIGHT, BG, MENU_BG, 
+from const import COLORS, WS_RESOLUTIONS
 from data import Enemy, collide # Player
 
 
 def get_screen_res():
     monitors: List[Monitor] = get_monitors()
     width, height = monitors[0].width, monitors[0].height
-    display = 0
+    display: int = 0
+    final_resolution = None
     for i in range(len(monitors)):
         if monitors[i].is_primary == True:
             width = monitors[i].width
             height = monitors[i].height
             display = i
     baseheight = width / 16 * 9
-    if height == baseheight: # 16:9 monitor
+    if height <= baseheight: # 16:9 monitor
         for res in WS_RESOLUTIONS:
             if WS_RESOLUTIONS[res][1] <= height:
-                final_resoliton = res
-                break
-    elif height < baseheight: # 4:3 or simular
-        # height is max
-        for res in WS_RESOLUTIONS:
-            if WS_RESOLUTIONS[res][1] <= height:
-                final_resoliton = res
+                final_resolution = res
                 break
     else: # superwide
         # width is max
         for res in WS_RESOLUTIONS:
             if WS_RESOLUTIONS[res][0] <= width:
-                final_resoliton = res
+                final_resolution = res
                 break
-    return WS_RESOLUTIONS[final_resoliton], display, final_resoliton
+    if not final_resolution:
+        final_resolution = '1280x720 (HD)'
+    print('DEBUG', final_resolution)
+    return WS_RESOLUTIONS[final_resolution], display, final_resolution
 
 
 def game_init():
