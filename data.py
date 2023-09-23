@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-from const import COLORS # HEIGHT
+from const import COLORS
 
 # Load images
 RED_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'enemy3_small.png'))
@@ -17,12 +17,6 @@ RED_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_red.png'))
 GREEN_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_green.png'))
 BLUE_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_blue.png'))
 YELLOW_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_yellow.png'))
-
-
-def collide(obj1, obj2): # ?
-    offset_x = obj2.x - obj1.x
-    ofsset_y = obj2.y - obj1.y
-    return obj1.mask.overlap(obj2.mask, (offset_x, ofsset_y)) != None
 
 
 # class GameData:
@@ -42,6 +36,11 @@ class SpaceObject: # need to create base class
     def move(self, vert_vel):
         self.y += vert_vel
 
+    def collide(self, obj):
+        offset_x = obj.x - self.x
+        offset_y = obj.y - self.y
+        return self.mask.overlap(obj.mask, (offset_x, offset_y)) != None
+
 
 class WeaponShell(SpaceObject):
     '''Base shooting object, which can make a damage'''
@@ -53,9 +52,6 @@ class WeaponShell(SpaceObject):
 
     def off_screen(self, height):
         return not (self.y <= height and self.y >= 0) # ?
-    
-    def collision(self, obj):
-        return collide(self, obj)
 
     def move(self, vert_vel, target=None, damage=10):
         super().move(vert_vel)
@@ -63,12 +59,14 @@ class WeaponShell(SpaceObject):
         if self.off_screen(self.session_data['screen_height']):
             exists = False
         elif isinstance(target, Player):
-            if self.collision(target):
+            # if self.collision(target):
+            if self.collide(target):
                 target.health -= damage
                 exists = False
         elif isinstance(target, list):
             for obj in target:
-                if self.collision(obj):
+                # if self.collision(obj):
+                if self.collide(obj):
                     obj.health -= damage
                     exists = False
         return exists

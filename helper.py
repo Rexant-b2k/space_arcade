@@ -1,12 +1,12 @@
 import os
-from typing import List
+from typing import List #, Dict, Type
 
 import pygame
 import random
 from screeninfo import get_monitors, Monitor
 
 from const import COLORS, WS_RESOLUTIONS
-from data import Enemy, collide # Player
+from data import Enemy, Player, WeaponShell
 
 
 def get_screen_res():
@@ -21,6 +21,7 @@ def get_screen_res():
             display = i
     baseheight = width / 16 * 9
     if height <= baseheight: # 16:9 monitor or less (4:3)
+        # height is max
         for res in WS_RESOLUTIONS:
             if WS_RESOLUTIONS[res][1] <= height:
                 final_resolution = res
@@ -33,7 +34,7 @@ def get_screen_res():
                 break
     if not final_resolution:
         final_resolution = '1280x720 (HD)'
-    print('DEBUG', final_resolution)
+    # print('DEBUG', final_resolution)
     return WS_RESOLUTIONS[final_resolution], display, final_resolution
 
 
@@ -59,7 +60,6 @@ def game_init():
     return game_data
 
 def game_session_init():
-    # player_vel = game_data['width'] // 320 # 5 in 1600*900
     session_data = {
         'score': 0,
         'enemies': [],
@@ -68,7 +68,7 @@ def game_session_init():
         'lives': 5,
         'wave_length': 5,
         'enemy_vel': 1,
-        'player_vel': game_data['width'] // 320,
+        'player_vel': game_data['width'] // 320, # 5 in 1600*900
         'laser_vel': 5,
         'laser_damage': 10,
         'screen_height': game_data['height']
@@ -89,7 +89,7 @@ def get_middle_position(obj):
 
 def paused():
     global game_data
-    pause = True
+    pause: bool = True
     pause_font = pygame.font.SysFont('comicsans', 70)
 
     while pause:
@@ -105,7 +105,7 @@ def paused():
 
 def escape_game():
     global game_data
-    pause = True
+    pause: bool = True
     escape_font = pygame.font.SysFont('comicsans', 70)
 
     while pause:
@@ -137,7 +137,8 @@ def generate_enemies(session_data):
         session_data['enemies'].append(enemy)
 
 
-def enemies_movement(session_data, player): # possible to remove player if move collide inside Space object class
+def enemies_movement(session_data, player: Player): # possible to remove player if move collide inside Space object class
+    enemy: Enemy
     for enemy in session_data['enemies'][:]:
         if enemy.is_dead():
             session_data['enemies'].remove(enemy)
@@ -150,16 +151,17 @@ def enemies_movement(session_data, player): # possible to remove player if move 
             random.randrange(0, 2*game_data['FPS']) == 1): # each ~ 2 sec
             enemy.shoot()
 
-        if collide(enemy, player): # ?
+        if enemy.collide(player):
             player.health -= 10
             session_data['score'] += 1
             session_data['enemies'].remove(enemy)
-        elif enemy.y + enemy.get_height() > game_data['height']: # was HEIGHT
+        elif enemy.y + enemy.get_height() > game_data['height']:
             session_data['lives'] -= 1
             session_data['enemies'].remove(enemy)
 
 
-def weapon_shell_movement(session_data, player):
+def weapon_shell_movement(session_data, player: Player) -> None:
+    shell: WeaponShell
     for shell in session_data['weapon_shells'][:]:
         if shell.parent == player:
             target = session_data['enemies']
