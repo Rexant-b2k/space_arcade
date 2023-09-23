@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-from const import HEIGHT, COLORS
+from const import COLORS # HEIGHT
 
 # Load images
 RED_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'enemy3_small.png'))
@@ -25,6 +25,9 @@ def collide(obj1, obj2): # ?
     return obj1.mask.overlap(obj2.mask, (offset_x, ofsset_y)) != None
 
 
+# class GameData:
+#     '''Storage of game data'''
+
 class SpaceObject: # need to create base class
     '''Base object that can appear on game screen'''
     def __init__(self, pos_x, pos_y, img):
@@ -42,10 +45,11 @@ class SpaceObject: # need to create base class
 
 class WeaponShell(SpaceObject):
     '''Base shooting object, which can make a damage'''
-    def __init__(self, pos_x, pos_y, img, parent, damage=10):
+    def __init__(self, pos_x, pos_y, img, parent, session_data, damage=10):
         super().__init__(pos_x, pos_y, img)
         self.damage: int = damage
         self.parent: Ship = parent
+        self.session_data = session_data
 
     def off_screen(self, height):
         return not (self.y <= height and self.y >= 0) # ?
@@ -56,7 +60,7 @@ class WeaponShell(SpaceObject):
     def move(self, vert_vel, target=None, damage=10):
         super().move(vert_vel)
         exists = True
-        if self.off_screen(HEIGHT):
+        if self.off_screen(self.session_data['screen_height']):
             exists = False
         elif isinstance(target, Player):
             if self.collision(target):
@@ -94,7 +98,7 @@ class Ship(SpaceObject):
 
     def shoot(self): # cooldown is located in main
         if self.cool_down_counter == 0:
-            laser = Laser(self.x - ((self.laser_img.get_width() - self.img.get_width())/2), self.y, self.laser_img, self)
+            laser = Laser(self.x - ((self.laser_img.get_width() - self.img.get_width())/2), self.y, self.laser_img, self, self.session_data)
             self.session_data['weapon_shells'].append(laser)
             self.cool_down_counter = 1
 
@@ -106,6 +110,7 @@ class Ship(SpaceObject):
 
     def get_height(self):
         return self.img.get_height()
+
 
 class Player(Ship):
     COOLDOWN = 20 # 1/3 a second if fps = 60
