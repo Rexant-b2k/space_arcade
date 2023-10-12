@@ -6,7 +6,7 @@ import random
 from screeninfo import get_monitors, Monitor
 
 from const import COLORS, WS_RESOLUTIONS
-from data import Enemy, Player, WeaponShell
+from data import Enemy, Medkit, Player, StaticObject, WeaponShell
 
 
 def get_screen_res():
@@ -64,6 +64,7 @@ def game_session_init():
         'score': 0,
         'enemies': [],
         'weapon_shells': [],
+        'static_objects': [],
         'level': 0,
         'lives': 5,
         'wave_length': 5,
@@ -71,6 +72,7 @@ def game_session_init():
         'player_vel': game_data['width'] // 320, # 5 in 1600*900
         'laser_vel': 5,
         'laser_damage': 10,
+        'static_vel': 2,
         'screen_height': game_data['height']
     }
 
@@ -172,3 +174,29 @@ def weapon_shell_movement(session_data, player: Player) -> None:
         shell_exists = shell.move(speed, target, session_data['laser_damage'])
         if not shell_exists:
             session_data['weapon_shells'].remove(shell)
+
+def generate_medkits(session_data, player: Player):
+    probability = 30 # each 30 sec
+    if player.health <= 20:
+        probability = 10
+    elif player.health <= 70:
+        probability = 20
+    if random.randrange(0, probability*game_data['FPS']) == 1:
+        medkit = Medkit(random.randrange(50, game_data['width'] - 100),
+                        random.randrange(-1500, -100))
+        session_data['static_objects'].append(medkit)
+
+
+def static_objects_movement(session_data, player: Player):
+    obj: StaticObject
+    for obj in session_data['static_objects'][:]:
+        obj_h_vel = session_data['static_vel']
+        if obj.y > game_data['height'] * 0.7:
+            obj_h_vel = random.randrange(-session_data['static_vel'],
+                                       0,3 * session_data['static_vel'])
+        obj.move(obj_h_vel)
+        if obj.collide(player):
+            player.health += 50
+            if player.health >= player.max_health:
+                player.health = player.max_health
+            session_data['static_objects'].remove(obj)

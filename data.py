@@ -12,11 +12,14 @@ BLUE_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'enemy1_small.png'))
 # Player player
 YELLOW_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'main_ship3_small.png'))
 
-# Lsers
+# Lasers
 RED_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_red.png'))
 GREEN_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_green.png'))
 BLUE_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_blue.png'))
 YELLOW_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_yellow.png'))
+
+# Static objects
+MEDKIT = pygame.image.load(os.path.join('assets', 'medkit_small.png'))
 
 
 # class GameData:
@@ -75,6 +78,16 @@ class WeaponShell(SpaceObject):
 class Laser(WeaponShell):
     '''Base attack shot, moved directly down'''
     pass
+
+
+class StaticObject(SpaceObject):
+    pass
+
+
+class Medkit(StaticObject):
+    def __init__(self, pos_x, pos_y):
+        img = MEDKIT
+        super().__init__(pos_x, pos_y, img)
 
 
 class Ship(SpaceObject):

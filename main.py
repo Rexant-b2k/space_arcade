@@ -2,7 +2,10 @@ import pygame
 
 from const import COLORS
 from data import Player
-from helper import game_init, game_session_init, paused, escape_game, get_horizontal_center_position, get_middle_position, generate_enemies, enemies_movement, weapon_shell_movement
+from helper import (game_init, game_session_init, paused, escape_game,
+                    get_horizontal_center_position, get_middle_position,
+                    generate_enemies, enemies_movement, weapon_shell_movement,
+                    generate_medkits, static_objects_movement)
 
 def main(session_data):
     run = True
@@ -11,8 +14,8 @@ def main(session_data):
     lost_font = pygame.font.SysFont('comicsans', game_data['height']//15)
     
     player = Player(game_data['width'] / 2,
-                    game_data['height'] * 0.87,
-                    session_data) # magic
+                    game_data['height'] * 0.87, # magic
+                    session_data)
 
     clock = pygame.time.Clock()
 
@@ -40,6 +43,9 @@ def main(session_data):
 
         for shell in session_data['weapon_shells']:
             shell.draw(game_data['WINDOW'])
+
+        for obj in session_data['static_objects']:
+            obj.draw(game_data['WINDOW'])
 
         player.draw(game_data['WINDOW'])
 
@@ -97,6 +103,13 @@ def main(session_data):
 
         # Enemy movement
         enemies_movement(session_data, player)
+
+        # Generate medkits
+        generate_medkits(session_data, player)
+
+        # Static objects movements
+        static_objects_movement(session_data, player)
+
 
 
 def main_menu():
