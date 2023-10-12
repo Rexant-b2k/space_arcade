@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-from const import HEIGHT, COLORS
+from const import COLORS
 
 # Load images
 RED_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'enemy3_small.png'))
@@ -12,18 +12,18 @@ BLUE_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'enemy1_small.png'))
 # Player player
 YELLOW_SPACE_SHIP = pygame.image.load(os.path.join('assets', 'main_ship3_small.png'))
 
-# Lsers
+# Lasers
 RED_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_red.png'))
 GREEN_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_green.png'))
 BLUE_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_blue.png'))
 YELLOW_LASER = pygame.image.load(os.path.join('assets', 'pixel_laser_yellow.png'))
 
+# Static objects
+MEDKIT = pygame.image.load(os.path.join('assets', 'medkit_small.png'))
 
-def collide(obj1, obj2): # ?
-    offset_x = obj2.x - obj1.x
-    ofsset_y = obj2.y - obj1.y
-    return obj1.mask.overlap(obj2.mask, (offset_x, ofsset_y)) != None
 
+# class GameData:
+#     '''Storage of game data'''
 
 class SpaceObject: # need to create base class
     '''Base object that can appear on game screen'''
@@ -39,32 +39,37 @@ class SpaceObject: # need to create base class
     def move(self, vert_vel):
         self.y += vert_vel
 
+    def collide(self, obj):
+        offset_x = obj.x - self.x
+        offset_y = obj.y - self.y
+        return self.mask.overlap(obj.mask, (offset_x, offset_y)) != None
+
 
 class WeaponShell(SpaceObject):
     '''Base shooting object, which can make a damage'''
-    def __init__(self, pos_x, pos_y, img, parent, damage=10):
+    def __init__(self, pos_x, pos_y, img, parent, session_data, damage=10):
         super().__init__(pos_x, pos_y, img)
         self.damage: int = damage
         self.parent: Ship = parent
+        self.session_data = session_data
 
     def off_screen(self, height):
         return not (self.y <= height and self.y >= 0) # ?
-    
-    def collision(self, obj):
-        return collide(self, obj)
 
     def move(self, vert_vel, target=None, damage=10):
         super().move(vert_vel)
         exists = True
-        if self.off_screen(HEIGHT):
+        if self.off_screen(self.session_data['screen_height']):
             exists = False
         elif isinstance(target, Player):
-            if self.collision(target):
+            # if self.collision(target):
+            if self.collide(target):
                 target.health -= damage
                 exists = False
         elif isinstance(target, list):
             for obj in target:
-                if self.collision(obj):
+                # if self.collision(obj):
+                if self.collide(obj):
                     obj.health -= damage
                     exists = False
         return exists
@@ -73,6 +78,16 @@ class WeaponShell(SpaceObject):
 class Laser(WeaponShell):
     '''Base attack shot, moved directly down'''
     pass
+
+
+class StaticObject(SpaceObject):
+    pass
+
+
+class Medkit(StaticObject):
+    def __init__(self, pos_x, pos_y):
+        img = MEDKIT
+        super().__init__(pos_x, pos_y, img)
 
 
 class Ship(SpaceObject):
@@ -94,7 +109,7 @@ class Ship(SpaceObject):
 
     def shoot(self): # cooldown is located in main
         if self.cool_down_counter == 0:
-            laser = Laser(self.x - ((self.laser_img.get_width() - self.img.get_width())/2), self.y, self.laser_img, self)
+            laser = Laser(self.x - ((self.laser_img.get_width() - self.img.get_width())/2), self.y, self.laser_img, self, self.session_data)
             self.session_data['weapon_shells'].append(laser)
             self.cool_down_counter = 1
 
@@ -106,6 +121,7 @@ class Ship(SpaceObject):
 
     def get_height(self):
         return self.img.get_height()
+
 
 class Player(Ship):
     COOLDOWN = 20 # 1/3 a second if fps = 60
